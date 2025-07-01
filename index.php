@@ -1,153 +1,171 @@
 <?php
-// index.php
+// ==== HANDLE CUSTOM RECIPE FORM SUBMISSION ====
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['custom_recipe_submit'])) {
+    $name    = htmlspecialchars(trim($_POST['name']));
+    $email   = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
+    $details = htmlspecialchars(trim($_POST['details']));
+    if ($name && $email && $details) {
+        $to      = 'you@yourdomain.com';         // ← change to your address
+        $subject = 'New Custom Recipe Request';
+        $message = "Name: $name\nEmail: $email\nDetails: $details\nRequested on: " . date('d-m-Y H:i:s');
+        $headers = "From: no-reply@yourdomain.com\r\nReply-To: $email\r\n";
+        mail($to, $subject, $message, $headers);
+        $success = "Thank you, $name! Your custom recipe request has been sent. We'll email you within 24 hours.";
+    } else {
+        $error = "Please fill out all fields correctly.";
+    }
+}
 
-// 1. Load Composer’s autoloader (and with it, your JCI SDK)
-//    Make sure you ran `composer install` so that vendor/autoload.php exists.
-require __DIR__ . '/vendor/autoload.php';
-
-// 2. (Optional) Instantiate your JCI client here:
-// use JCI\Client;
-// $jci = new Client([ /* config */ ]);
-// $result = $jci->someMethod();
+// ==== JCI CODE HERE ====
+// <script src="…your JCI snippet…"></script>
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CulinaryMasters - Premium Recipe Collection & Custom Orders</title>
-    <style>
-        /* … all of your existing CSS exactly as before … */
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recipe Haven • Free Custom Recipes</title>
+  <style>
+    :root {
+      --primary: #c0392b;
+      --accent:  #f39c12;
+      --bg:      #fdfdfd;
+      --text:    #2c3e50;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:Arial,sans-serif; color:var(--text); background:var(--bg); }
+    header { background:var(--primary); padding:20px; display:flex; align-items:center; justify-content:space-between; }
+    header .logo { color:#fff; font-size:1.8rem; font-weight:bold; }
+    header nav a { color:#fff; margin-left:15px; text-decoration:none; font-weight:500; }
+    .hero { height:300px; background:url('https://source.unsplash.com/1200x300/?restaurant')center/cover; display:flex; align-items:center; justify-content:center; color:#fff; text-shadow:0 0 5px rgba(0,0,0,0.5); }
+    .hero h1 { font-size:2.5rem; }
+    section { padding:60px 80px; }
+    h2 { margin-bottom:20px; color:var(--primary); }
+    .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:8px; overflow:hidden; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .card img { width:100%; height:150px; object-fit:cover; }
+    .card-content { padding:15px; }
+    .card-content h3 { margin-bottom:10px; font-size:1.1rem; }
+    .card-content p { font-size:0.9rem; margin-bottom:15px; color:#555; }
+    .btn { display:inline-block; background:var(--accent); color:#fff; padding:8px 12px; border-radius:4px; text-decoration:none; font-size:0.9rem; }
+    #reviews .review { margin-bottom:20px; }
+    .review p { font-style:italic; color:#555; margin-bottom:5px; }
+    .review span { font-weight:bold; }
+    form input, form textarea { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:4px; }
+    form button { background:var(--primary); color:#fff; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; }
+    .message { padding:10px; margin-bottom:20px; border-radius:4px; }
+    .success { background:#dff0d8; color:#3c763d; }
+    .error   { background:#f2dede; color:#a94442; }
+    footer { background:#333; color:#fff; text-align:center; padding:20px; font-size:0.9rem; }
+    @media(max-width:1024px){
+      .grid { grid-template-columns:repeat(2,1fr); }
+      section { padding:40px 20px; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <nav class="container">
-            <div class="logo">CulinaryMasters</div>
-            <ul class="nav-links">
-                <li><a href="#home">Home</a></li>
-                <li><a href="#custom-order">Custom Order</a></li>
-                <li><a href="#recipes">Recipes</a></li>
-                <li><a href="#reviews">Reviews</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <section id="home" class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Premium Recipe Collection</h1>
-                <p>Discover authentic flavors from around the world, crafted by master chefs</p>
-                <a href="#custom-order" class="cta-button">Order Your Custom Recipe FREE</a>
-            </div>
+  <header>
+    <div class="logo">Recipe Haven</div>
+    <nav>
+      <a href="#recipes">Recipes</a>
+      <a href="#reviews">Reviews</a>
+      <a href="#about">About Us</a>
+      <a href="#vision">Our Vision</a>
+      <a href="#contact">Contact</a>
+      <a href="#order">Custom Recipe</a>
+      <a href="#disclaimer">Disclaimer</a>
+      <a href="#privacy">Privacy</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1>Delicious Recipes, Just a Click Away</h1>
+  </div>
+
+  <!-- Featured Recipes -->
+  <section id="recipes">
+    <h2>Featured Recipes</h2>
+    <div class="grid">
+      <?php for($i=1; $i<=8; $i++): ?>
+      <div class="card">
+        <img src="https://source.unsplash.com/400x300/?food&sig=<?= $i ?>" alt="Recipe <?= $i ?>">
+        <div class="card-content">
+          <h3>Recipe Title <?= $i ?></h3>
+          <p>A quick, tasty dish ready in under 30 minutes.</p>
+          <a href="#order" class="btn">Get Custom Version</a>
         </div>
-    </section>
+      </div>
+      <?php endfor; ?>
+    </div>
+  </section>
 
-    <section id="custom-order" class="custom-order">
-        <div class="container">
-            <div class="custom-order-content">
-                <h2>🎯 Custom Recipe Service</h2>
-                <p>Can't find your favorite recipe? No problem! Tell us what you're craving and we'll create a personalized recipe just for you - delivered within 24 hours, completely FREE!</p>
-                
-                <form class="order-form" method="POST" action="">
-                    <div class="form-group">
-                        <label for="recipe-name">What Recipe Do You Want?</label>
-                        <input type="text" id="recipe-name" name="recipe_name" placeholder="e.g., Grandma's Apple Pie, Spicy Thai Curry..." required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="dietary">Any Dietary Preferences?</label>
-                        <input type="text" id="dietary" name="dietary" placeholder="Vegetarian, Gluten-free, Low-carb, etc.">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Your Email</label>
-                        <input type="email" id="email" name="email" placeholder="your@email.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="details">Additional Details</label>
-                        <textarea id="details" name="details" rows="3" placeholder="Tell us more about what you're looking for..."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="cta-button">Get My FREE Custom Recipe</button>
-                </form>
-            </div>
-        </div>
-    </section>
+  <!-- User Reviews -->
+  <section id="reviews">
+    <h2>User Reviews</h2>
+    <div class="review">
+      <p>"Absolutely loved the custom recipe they sent me!"</p>
+      <span>— Priya K.</span>
+    </div>
+    <div class="review">
+      <p>"Quick, easy, and delicious. The 24-hr promise is real."</p>
+      <span>— Mark T.</span>
+    </div>
+    <div class="review">
+      <p>"My friends thought I hired a chef. Thanks, Recipe Haven!"</p>
+      <span>— Elena R.</span>
+    </div>
+  </section>
 
-    <section id="recipes" class="recipes">
-        <div class="container">
-            <h2 class="section-title">Featured Recipes</h2>
-            <div class="recipe-grid">
-                <!-- recipe cards… -->
-            </div>
-        </div>
-    </section>
+  <!-- About Us -->
+  <section id="about">
+    <h2>About Us</h2>
+    <p>At Recipe Haven, we believe everyone deserves restaurant-quality food at home. Our chefs craft custom recipes tailored to your taste—free, in just 24 hours.</p>
+  </section>
 
-    <section id="reviews" class="reviews">
-        <div class="container">
-            <h2 class="section-title" style="color: white;">What Our Customers Say</h2>
-            <div class="reviews-grid">
-                <!-- review cards… -->
-            </div>
-        </div>
-    </section>
+  <!-- Our Vision -->
+  <section id="vision">
+    <h2>Our Vision</h2>
+    <p>To make gourmet cooking accessible to all, one personalized recipe at a time.</p>
+  </section>
 
-    <section id="about" class="about">
-        <div class="container">
-            <h2 class="section-title">About CulinaryMasters</h2>
-            <div class="about-content">
-                <!-- about content… -->
-            </div>
-        </div>
-    </section>
+  <!-- Contact Us -->
+  <section id="contact">
+    <h2>Contact Us</h2>
+    <p>Email: contact@yourdomain.com<br>Phone: +1 (555) 123-4567</p>
+  </section>
 
-    <section id="vision" class="vision">
-        <div class="container">
-            <h2 class="section-title" style="color: white;">Our Vision</h2>
-            <div class="vision-content">
-                <!-- vision content… -->
-            </div>
-        </div>
-    </section>
+  <!-- Custom Recipe Order -->
+  <section id="order">
+    <h2>Request Your Custom Recipe (FREE)</h2>
+    <?php if(!empty($success)): ?>
+      <div class="message success"><?= $success ?></div>
+    <?php elseif(!empty($error)): ?>
+      <div class="message error"><?= $error ?></div>
+    <?php endif; ?>
+    <form method="POST" action="#order">
+      <input type="text"   name="name"    placeholder="Your Name"           required>
+      <input type="email"  name="email"   placeholder="Your Email"          required>
+      <textarea name="details" rows="5" placeholder="Describe what you’d like…" required></textarea>
+      <button type="submit" name="custom_recipe_submit">Send My Free Recipe</button>
+    </form>
+  </section>
 
-    <section id="contact" class="contact">
-        <div class="container">
-            <h2 class="section-title">Get In Touch</h2>
-            <div class="contact-content">
-                <div class="contact-info">
-                    <!-- contact info… -->
-                </div>
-                <form class="contact-form" method="POST" action="">
-                    <!-- contact form fields… -->
-                    <button type="submit" class="cta-button">Send Message</button>
-                </form>
-            </div>
-        </div>
-    </section>
+  <!-- Disclaimer -->
+  <section id="disclaimer">
+    <h2>Disclaimer</h2>
+    <p>We do <strong>not</strong> charge any money. All recipes and custom services are completely free.</p>
+  </section>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2025 CulinaryMasters. All rights reserved. | Privacy Policy | Terms of Service</p>
-            <p>Bringing the world's flavors to your kitchen, one recipe at a time.</p>
-        </div>
-    </footer>
+  <!-- Privacy Policy -->
+  <section id="privacy">
+    <h2>Privacy Policy</h2>
+    <p>Your privacy is important to us. We will never share or sell your personal data. We use your email only to deliver your requested recipes.</p>
+  </section>
 
-    <!-- Recipe Modal markup… -->
+  <footer>
+    &copy; <?= date('Y') ?> Recipe Haven. All rights reserved.
+  </footer>
 
-    <script>
-        // Your existing JS: openRecipeModal, closeRecipeModal, smooth scroll, form handlers…
-
-        // Scroll effect for header
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            header.style.background = window.scrollY > 50
-                ? 'rgba(26,14,8,0.9)'
-                : '';
-        });
-    </script>
 </body>
 </html>
